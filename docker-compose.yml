@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  flask:
+    build: .  # Указываем текущую директорию для сборки
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app  # Монтируем текущую директорию в контейнер, чтобы файл app.py был доступен в контейнере
+    environment:
+      - FLASK_ENV=development
+    command: python /app/app.py  # Указываем путь до app.py в контейнере

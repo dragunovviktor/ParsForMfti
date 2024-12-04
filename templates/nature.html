@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+/* Стили для отзывов */
+.reviews-container {
+    margin-top: 40px;
+}
+
+.reviews {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.review-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    transition: transform 0.3s ease;
+}
+
+.review-card:hover {
+    transform: translateY(-10px);
+}
+
+h3 {
+    font-size: 18px;
+    color: #4CAF50;
+}
+
+.best {
+    color: #4CAF50;
+    font-style: italic;
+}
+
+.worst {
+    color: #f44336;
+}
+
+
+{% block title %}Мероприятия на природе в Пскове и области{% endblock %}
+
+{% block content %}
+    <h1>Мероприятия на природе</h1>
+
+    <!-- Места на природе -->
+    {% if nature_places %}
+        <div class="card-container">
+            {% for nature in nature_places %}
+            <div class="card">
+                <h2>{{ nature.nature_name }}</h2>
+                <p>{{ nature.nature_description }}</p>
+                <a href="#">Подробнее</a>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Нет доступных мест на природе.</p>
+    {% endif %}
+
+    <!-- Рекомендация дня -->
+    {% if itog %}
+        <div class="card">
+            <h2>Рекомендация дня</h2>
+            <p>{{ itog[0].info }}</p>
+            <a href="#">Подробнее</a>
+        </div>
+    {% else %}
+        <p>Информация о маршруте недоступна.</p>
+    {% endif %}
+
+    <!-- Самые дешевые и дорогие отели -->
+    <div class="hotel-info">
+        <h3>Самые дешевые и дорогие отели:</h3>
+        {% if cheapest and most_expensive %}
+            <p>Самый дешевый отель: <strong>{{ cheapest['hotel_name'] }}</strong> с ценой <strong>{{ cheapest['price'] }} руб.</strong></p>
+            <p>Самый дорогой отель: <strong>{{ most_expensive['hotel_name'] }}</strong> с ценой <strong>{{ most_expensive['price'] }} руб.</strong></p>
+        {% else %}
+            <p>Не удалось найти отели с ценами.</p>
+        {% endif %}
+    </div>
+
+    <!-- График цен на отели -->
+    <div class="card-container">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Цены на отели в Пскове</h5>
+                <p class="card-text">Ниже представлен график с ценами на различные отели в Пскове. Вы можете увидеть, какие отели самые дешевые и самые дорогие.</p>
+
+                <div class="text-center">
+                    <img src="{{ url_for('static', filename='hotel_prices.png') }}" alt="График цен на отели" class="img-fluid">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Блок с отзывами -->
+
+<!-- Блок с отзывами -->
+<div class="reviews-container">
+    <h2>Отзывы о природе</h2>
+    {% if best_reviews or worst_reviews %}
+        <div class="reviews">
+            <h3>Лучшие отзывы:</h3>
+            {% for review in best_reviews %}
+                <div class="review-card">
+                    <p class="best">{{ review.best }}</p>
+                </div>
+            {% endfor %}
+
+            <h3>Худшие отзывы:</h3>
+            {% for review in worst_reviews %}
+                <div class="review-card">
+                    <p class="worst">{{ review.worst }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Нет отзывов.</p>
+    {% endif %}
+</div>
+
+{% endblock %}
+
