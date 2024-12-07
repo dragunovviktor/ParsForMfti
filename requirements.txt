@@ -9,3 +9,8 @@ lxml
 Werkzeug
 matplotlib
 schedule
+zscore
+seaborn
+scipy
+apscheduler
+jsonify

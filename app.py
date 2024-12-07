@@ -1,12 +1,12 @@
 from random import random
-
+import re
 from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
 from sqlalchemy.exc import IntegrityError
-from models import db, User, Place, SavedPlace, SavedRestaurant, SavedNatureOfPskov, FinalRouteInformation, SavedHotels, BestAndWorst
+from models import db, User, Place, SavedPlace, SavedRestaurant, SavedNatureOfPskov, FinalRouteInformation, SavedHotels, BestAndWorst, BestAndWorstKvas
 import logging
 import requests
 from requests import get
@@ -20,6 +20,11 @@ import schedule
 import time
 import threading
 import numpy as np
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
+from flask import jsonify
+import math
+
 app = Flask(__name__)
 app.config.from_object('config.Config')
 
@@ -55,11 +60,6 @@ def restaurants():
     return render_template('restaurants.html', restaurants=restaurants)
 
 
-@app.route('/attractions')
-@login_required
-def attractions():
-    places = Place.query.all()
-    return render_template('attractions.html', places=places)
 
 @app.route('/places')
 @login_required
@@ -67,17 +67,11 @@ def places():
     places = Place.query.all()
     return render_template('places.html', places=places)
 
-
-
-
 @app.route('/events')
 @login_required
 def events():
     places = Place.query.all()
     return render_template('events.html', places=places)
-
-
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -285,7 +279,6 @@ def save_nature_places_on_start():
 
 save_nature_places_on_start()
 
-
 restaurants_ = ['Helga',
                'Dunkan',
                'Бар 903',
@@ -398,9 +391,6 @@ restaurants_ = ['Ресторан 1', 'Ресторан 2', 'Ресторан 3'
 info_about_big_places = ['Место 1', 'Место 2', 'Место 3']
 des = ['Описание 1', 'Описание 2', 'Описание 3']
 
-
-
-
 def generator_of_random_routes(hotels_info):
     return (f'Возможно, сегодня неплохой идеей является сходить в ресторан {random.choice(restaurants_)}, '
             f'если же говорить про отели, то {random.choice([hotel["name"] for hotel in hotels_info if hotel["price"] is not None])}, '
@@ -410,7 +400,6 @@ def generator_of_random_routes(hotels_info):
 
 
 final_route = generator_of_random_routes(hotels_info)
-
 
 def fetch_hotels_info(url):
     headers = {
@@ -448,23 +437,21 @@ def fetch_hotels_info(url):
     return hotels
 
 
-# Получаем данные с 18 страниц
 all_hotels = []
 
 for page_number in range(1, 19):  # Страницы от 1 до 18
     url = f"https://ostrovok.ru/hotel/russia/pskov/?page={page_number}"
     hotels_info = fetch_hotels_info(url)
     print(hotels_info)
-    all_hotels.extend(hotels_info)  # Добавляем информацию о гостиницах в общий список
+    all_hotels.extend(hotels_info)
 
-# Преобразуем цены в список чисел (в рублях)
 prices_rub = []
 ratings = []
 for hotel in all_hotels:
     try:
         # Обрабатываем цену
         price_rub = hotel['Цена'].replace(' ', '')
-        price_rub = int(price_rub)  # Преобразуем цену в число
+        price_rub = int(price_rub)
 
         # Обрабатываем рейтинг
         rating = hotel['Рейтинг']
@@ -473,14 +460,9 @@ for hotel in all_hotels:
     except ValueError:
         continue
 
-# Используем numpy для медианы
 median_price = np.median(prices_rub)
 
 print(f"Медиана по ценам: {median_price} ₽")
-
-# 2. Подбор гостиницы с наименьшей ценой и наибольшим рейтингом
-# Используем numpy для сортировки
-
 
 ratings = [float(rating.replace(',', '.')) if rating != 'Нет рейтинга' else np.nan for rating in ratings]
 
@@ -521,6 +503,8 @@ print("\nХудшие отели:")
 for entry in worst_filtered:
     print(entry)
 print(ratings)
+
+
 def save_hotels_to_db(hotels, prices_rub, ratings):
     with app.app_context():
         for i, hotel in enumerate(hotels):
@@ -557,8 +541,6 @@ def save_hotels_to_db(hotels, prices_rub, ratings):
         print("Data successfully saved to the database.")
 
 
-# Вызов функции с данными
-print(ratings)
 save_hotels_to_db(all_hotels, prices_rub, ratings)
 
 
@@ -571,28 +553,6 @@ def save_best_and_worst(best, worst):
                     'worst': w
                 }
 
-                stmt = insert(BestAndWorst).values(best_and_worst_data).on_conflict_do_nothing(index_elements=['best', 'worst'])
-                db.session.execute(stmt)
-
-            except Exception as e:
-                print(f"Error processing best/worst data: {e}")
-
-        db.session.commit()
-        print("Лучшие и худшие гостиницы сохранены в базу")
-
-
-save_best_and_worst(best, worst)
-
-def save_best_and_worst(best, worst):
-    with app.app_context():
-        for b, w in zip(best, worst):
-            try:
-                # Prepare data for insertion
-                best_and_worst_data = {
-                    'best': b,
-                    'worst': w
-                }
-
                 new_entry = BestAndWorst(**best_and_worst_data)
 
                 db.session.add(new_entry)
@@ -600,12 +560,34 @@ def save_best_and_worst(best, worst):
             except Exception as e:
                 print(f"Error processing best/worst data: {e}")
 
-        # Commit the changes
         db.session.commit()
-        print("Лучшие и худшие гостиницы")
-
 
 save_best_and_worst(best, worst)
+
+def delete_old_data():
+    with app.app_context():
+        db.session.query(SavedHotels).delete()
+        db.session.query(SavedNatureOfPskov).delete()
+        db.session.commit()
+        print("Старые данные удалены.")
+
+
+def update_all_data():
+    delete_old_data()
+
+    all_hotels = []
+    for page_number in range(1, 19):
+        url = f"https://ostrovok.ru/hotel/russia/pskov/?page={page_number}"
+        hotels_info = fetch_hotels_info(url)
+        print(hotels_info)
+        all_hotels.extend(hotels_info)
+
+    save_hotels_to_db(all_hotels)
+    save_nature_places_on_start(dict_for_city_info)
+
+    print("Все данные обновлены.")
+
+
 def update_and_scrape():
     url_address = 'https://www.kp.ru/russia/pskov/dostoprimechatelnosti/'
 
@@ -644,8 +626,297 @@ def update_and_scrape():
 
     print("Обновление данных в базе завершено ")
 
+
+def convert_uah_to_rub(uah_amount):
+    conversion_rate = 2.5  # 1 гривна = 2.5 рубля (пример)
+    return round(uah_amount * conversion_rate, 2)
+
+
+# Функция для парсинга данных с сайта Europa-Market
+def get_kvas_data_europa(url):
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        print(f"Ошибка при загрузке страницы {url}. Код статуса: {response.status_code}")
+        return []
+
+    soup = BeautifulSoup(response.text, 'html.parser')
+    products = soup.find_all('div', class_='card-product-block')
+
+    kvas_data = []
+
+    for product in products:
+        title = product.find('a', class_='card-product-content__title').text.strip()
+        price = product.find('span', itemprop='price')
+        if price:
+            price = price.text.strip()
+            price = parse_price(price)  # Преобразуем цену в число
+        else:
+            price = 0  # Если цена не найдена, устанавливаем 0
+        link = product.find('a', class_='card-product-content__title')['href']
+        img = product.find('img', class_='card-product-image__image')['src']
+
+        rating_div = product.select_one('a.card-product-content__rating > div')
+        rating = None
+        if rating_div:
+            rating = rating_div.text.strip()
+
+        # Извлекаем объем из названия товара
+        volume = extract_volume(title)
+
+        if price > 0:  # Только добавляем товары с ценой больше 0
+            kvas_data.append({
+                'title': title,
+                'price': price,
+                'img': f"https://cdn.europa-market.ru{img}",
+                'rating': rating if rating else "Нет информации",
+                'link': f"https://europa-market.ru{link}",
+                'volume': volume
+            })
+
+    return kvas_data
+
+
+# Функция для парсинга данных с сайта Produkty24
+def get_kvas_data_produkty24(url):
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        print(f"Ошибка при загрузке страницы {url}. Код статуса: {response.status_code}")
+        return []
+
+    soup = BeautifulSoup(response.text, 'html.parser')
+    products = soup.find_all('div', class_='col-lg-4 col-md-4 col-sm-6 col-xs-6')
+
+    kvas_data = []
+
+    for product in products:
+        title = product.find('span', class_='header').text.strip()
+
+        # Извлекаем цену в гривнах
+        price_text = product.find('div', class_='price')
+        if price_text:
+            price = price_text.find('span', class_='val').text.strip() + price_text.find('span',
+                                                                                         class_='cents').text.strip()
+            price_digits = ''.join([c for c in price if c.isdigit()])[:2]  # Оставляем только первые 2 цифры
+            price_uah = float(price_digits)
+            price_rub = convert_uah_to_rub(price_uah)
+        else:
+            price_rub = 0  # Если цена не найдена, устанавливаем 0
+
+        if price_rub > 0:  # Только добавляем товары с ценой больше 0
+            link = product.find('a', class_='inner')['href']
+            img = product.find('img', class_='photo')['src']
+
+            # Извлекаем объем из названия товара
+            volume = extract_volume(title)
+
+            kvas_data.append({
+                'title': title,
+                'price_uah': price_uah if price_uah else 0,  # Цена в гривнах
+                'price_rub': price_rub if price_rub else 0,  # Цена в рублях
+                'img': img,
+                'link': link,
+                'volume': volume
+            })
+
+    return kvas_data
+
+
+# Функция для извлечения объема из названия товара (например, "1л", "1.5л")
+def extract_volume(title):
+    match = re.search(r'(\d+(\.\d+)?)\s?л', title)
+    if match:
+        return float(match.group(1))  # Возвращаем объем в литрах
+    return 1  # Если объем не указан, считаем, что это 1 литр
+
+
+# Функция для преобразования рейтинга в числовое значение
+def transform_rating(rating):
+    if rating == 'Нет отзывов':
+        return 0
+    elif 'отзыв' in rating:
+        return int(rating.split()[0])
+    return 0
+
+
+# Функция для расчета цены за литр
+def calculate_price_per_liter(price, volume):
+    if volume == 0:
+        return 0
+    return price / volume
+
+
+# Функция для вычисления математического ожидания
+def calculate_expected_value(prices):
+    return np.mean(prices) if prices else 0
+
+
+# Функция для преобразования строки с ценой в число
+def parse_price(price_str):
+    """Парсит строку с ценой и возвращает числовое значение."""
+    price = ''.join([c for c in price_str if c.isdigit() or c == '.'])
+    try:
+        return float(price) if price else 0
+    except ValueError:
+        return 0
+
+
+# Функция для более сложного расчета рейтинга
+def calculate_rating(price_per_liter, rating_score, price_mean, price_std):
+    # Оценка на основе рейтинга
+    rating_factor = rating_score * 0.3  # Вес рейтинга (30%)
+
+    # Оценка на основе отклонения от математического ожидания
+    price_factor = 1 - abs(price_per_liter - price_mean) / price_std  # Чем ближе цена к среднему, тем выше оценка
+    price_factor = max(0, price_factor)  # Для предотвращения отрицательных значений
+
+    # Оценка на основе соотношения цена/объем
+    volume_factor = 1 / price_per_liter  # Чем меньше цена за литр, тем выше оценка
+
+    # Итоговая оценка
+    final_rating = rating_factor + price_factor + volume_factor
+    return final_rating
+
+def save_best_and_worst_kvas(best_value, worst_value):
+    with app.app_context():
+        try:
+            # Создаем новый объект BestAndWorstKvas с информацией о лучших и худших товарах
+            best_and_worst_kvas = BestAndWorstKvas(best=best_value, worst=worst_value)
+
+            # Добавляем объект в сессию
+            db.session.add(best_and_worst_kvas)
+
+            # Попытка сохранить изменения в базе данных
+            db.session.commit()
+            print(f"Сохранено: Лучший — {best_value}, Худший — {worst_value}")
+        except IntegrityError:
+            # В случае ошибки (например, если такая запись уже существует), откатываем изменения
+            db.session.rollback()
+            print(f"Ошибка: Запись с лучшим — {best_value} и худшим — {worst_value} уже существует.")
+        except Exception as e:
+            # Обработка других возможных ошибок
+            db.session.rollback()
+            print(f"Ошибка при сохранении: {e}")
+
+
+def analyze_kvas():
+    # Ссылки на страницы с товарами
+    europa_url = "https://europa-market.ru/catalog/kvas-1401"
+    produkty_url = "https://produkty24.com.ua/ru/alkogol-i-napitki/soki-vodyi/kvas/"
+
+    # Получаем данные с сайта Europa-Market
+    europa_kvas_data = get_kvas_data_europa(europa_url)
+
+    # Получаем данные с сайта Produkty24
+    produkty_kvas_data = get_kvas_data_produkty24(produkty_url)
+
+    # Собираем все данные в общий список
+    combined_data = []
+
+    for item in europa_kvas_data:
+        combined_data.append({
+            'title': item['title'],
+            'price': item['price'],
+            'img': item['img'],
+            'rating': item['rating'],
+            'link': item['link'],
+            'volume': item['volume']
+        })
+
+    for item in produkty_kvas_data:
+        combined_data.append({
+            'title': item['title'],
+            'price': item['price_rub'] if item['price_rub'] != 0 else 0,  # Цена в рублях
+            'img': item['img'],
+            'rating': 'Нет отзывов',  # Для второго списка рейтинг нет
+            'link': item['link'],
+            'volume': item['volume']
+        })
+
+    # Фильтруем данные, исключая товары с ценой 0
+    filtered_data = [item for item in combined_data if item['price'] > 0]
+
+    # Математическое ожидание цен
+    prices = [item['price'] for item in filtered_data]
+    expected_value = calculate_expected_value(prices)
+
+    # Рассчитываем статистические показатели
+    price_per_liter = [calculate_price_per_liter(item['price'], item['volume']) for item in filtered_data]
+    price_mean = np.mean(price_per_liter)
+    price_std = np.std(price_per_liter)
+
+    # Если минимальная цена 0, исключаем эти товары из дальнейшего анализа
+    if min(price_per_liter) == 0:
+        filtered_data = [item for item in filtered_data if calculate_price_per_liter(item['price'], item['volume']) > 0]
+
+    # Добавляем информацию о цене за литр для каждого товара и вычисляем рейтинг
+    for item in filtered_data:
+        item['price_per_liter'] = calculate_price_per_liter(item['price'], item['volume'])
+        rating_score = transform_rating(item['rating'])
+        item['rating'] = calculate_rating(item['price_per_liter'], rating_score, price_mean, price_std)
+
+    # Сортировка товаров по рейтингу
+    sorted_data = sorted(filtered_data, key=lambda x: x['rating'], reverse=True)
+
+    # Получаем 5 лучших и 5 худших товаров
+    best_kvas = sorted_data[:5]
+    worst_kvas = sorted_data[-5:]
+
+    # Формируем строки для сохранения в базу данных
+    best_string = "\n".join([f"{item['title']} - Цена за литр: {item['price_per_liter']:.2f} руб, Рейтинг: {item['rating']:.2f}" for item in best_kvas])
+    worst_string = "\n".join([f"{item['title']} - Цена за литр: {item['price_per_liter']:.2f} руб, Рейтинг: {item['rating']:.2f}" for item in worst_kvas])
+
+    # Сохраняем в базу данных
+    save_best_and_worst_kvas(best_string, worst_string)
+
+    # Выводим результаты
+    print("\n5 лучших квасов по комплексному рейтингу:")
+    for item in best_kvas:
+        print(f"{item['title']} - Цена за литр: {item['price_per_liter']:.2f} руб, Рейтинг: {item['rating']:.2f}")
+
+    print("\n5 худших квасов по комплексному рейтингу:")
+    for item in worst_kvas:
+        print(f"{item['title']} - Цена за литр: {item['price_per_liter']:.2f} руб, Рейтинг: {item['rating']:.2f}")
+
+analyze_kvas()
+
+
+def update_kvas_data():
+    with app.app_context():
+        try:
+            db.session.query(BestAndWorstKvas).delete()
+            db.session.commit()
+            print(f"Старые данные удалены. Перезапуск парсинга...")
+
+            analyze_kvas() #Тут я паршу данные заново для кваса
+
+            print("Данные успешно обновлены.")
+        except Exception as e:
+            db.session.rollback()
+            print(f"Ошибка при обновлении данных: {e}")
+
+def start_scheduler():
+    scheduler = BackgroundScheduler()
+
+    scheduler.add_job(update_kvas_data, 'interval', hours=6)
+
+    scheduler.start()
+
+    print("Планировщик задач запущен. Задачи будут выполняться каждые 6 часов.")
+
+    try:
+        while True:
+            time.sleep(1)
+    except (KeyboardInterrupt, SystemExit):
+        scheduler.shutdown()
+
+
+
+
 def schedule_task():
     schedule.every(6).hours.do(update_and_scrape)
+    schedule.every(6).hours.do(update_all_data)
 
     while True:
         schedule.run_pending()
@@ -656,7 +927,46 @@ def start_schedule_thread():
     thread.daemon = True
     thread.start()
 
+@app.route('/attractions')
+@login_required
+def attractions():
+    # Получаем все записи из таблицы BestAndWorstKvas
+    best_and_worst_kvas = BestAndWorstKvas.query.all()
 
+    # Передаем данные в шаблон
+    return render_template('attractions.html', best_and_worst_kvas=best_and_worst_kvas)
+
+@app.route('/get_best_kvas')
+def get_best_kvas():
+    # Сортируем по названию кваса "best", возможно, вам придется использовать другие поля для сортировки
+    best_kvas = BestAndWorstKvas.query.order_by(BestAndWorstKvas.best).limit(5).all()
+
+    # Формируем список с нужной информацией
+    best_kvas_list = []
+    for kvas in best_kvas:
+        best_kvas_list.append({
+            'title': kvas.best,  # Название лучшего кваса
+            'price_per_liter': 'Неизвестно',  # Пока не добавляем реальные данные
+            'rating': 'Неизвестно'  # Можно добавить рейтинг, если будет обработка
+        })
+
+    return jsonify({'best': best_kvas_list})
+
+@app.route('/get_worst_kvas')
+def get_worst_kvas():
+    # Сортируем по названию кваса "worst"
+    worst_kvas = BestAndWorstKvas.query.order_by(BestAndWorstKvas.worst).limit(5).all()
+
+    # Формируем список с нужной информацией
+    worst_kvas_list = []
+    for kvas in worst_kvas:
+        worst_kvas_list.append({
+            'title': kvas.worst,  # Название худшего кваса
+            'price_per_liter': 'Неизвестно',  # Пока не добавляем реальные данные
+            'rating': 'Неизвестно'  # Можно добавить рейтинг, если будет обработка
+        })
+
+    return jsonify({'worst': worst_kvas_list})
 @app.route('/nature')
 @login_required
 def nature():

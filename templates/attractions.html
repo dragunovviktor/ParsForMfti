@@ -1,19 +1,114 @@
 {% extends 'base.html' %}
 
-{% block title %} Развлечения {% endblock %}
+{% block title %} Лучшие и худшие квасы {% endblock %}
 
 {% block content %}
-    <h1>Рестораны</h1>
-    <div class="card-container">
-        <div class="card">
-            <h2>Мероприятие 1</h2>
-            <p>Описание мероприятия 1.</p>
-            <a href="#">Подробнее</a>
-        </div>
-        <div class="card">
-            <h2>Мероприятие 2</h2>
-            <p>Описание мероприятия 2.</p>
-            <a href="#">Подробнее</a>
-        </div>
-    </div>
+<h1>Лучшие и худшие квасы</h1>
+
+<!-- Кнопки для переключения между лучшими и худшими квасами -->
+<div class="buttons">
+    <button id="bestBtn" class="kvas-btn">Лучшие квасы</button>
+    <button id="worstBtn" class="kvas-btn">Худшие квасы</button>
+</div>
+
+<!-- Контейнер для отображения информации о квасах -->
+<div id="kvasContainer">
+    <!-- Здесь будут динамически загружаться лучшие и худшие квасы -->
+</div>
+
+<script>
+    // Функция для загрузки лучших квасов
+    document.getElementById('bestBtn').addEventListener('click', function() {
+        fetch('/get_best_kvas')
+            .then(response => response.json())
+            .then(data => {
+                displayKvas(data.best);
+            })
+            .catch(error => console.error('Error fetching best kvas:', error));
+    });
+
+    // Функция для загрузки худших квасов
+    document.getElementById('worstBtn').addEventListener('click', function() {
+        fetch('/get_worst_kvas')
+            .then(response => response.json())
+            .then(data => {
+                displayKvas(data.worst);
+            })
+            .catch(error => console.error('Error fetching worst kvas:', error));
+    });
+
+    // Функция для отображения квасов
+    function displayKvas(kvas) {
+        const container = document.getElementById('kvasContainer');
+        container.innerHTML = '';  // Очистка контейнера перед загрузкой новых данных
+
+        kvas.forEach(item => {
+            const div = document.createElement('div');
+            div.classList.add('kvas-item');
+            div.innerHTML = `
+                <h3>${item.title}</h3>
+            `;
+            container.appendChild(div);
+        });
+    }
+</script>
+
+<!-- Стили для кнопок и отображения квасов -->
+<style>
+    .buttons {
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .kvas-btn {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        margin: 0 10px;
+        border-radius: 5px;
+        transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+
+    .kvas-btn:hover {
+        transform: scale(1.1);  /* Увеличиваем размер кнопки */
+        background-color: #0056b3;  /* Темнее при наведении */
+    }
+
+    #kvasContainer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .kvas-item {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin: 10px 0;
+        width: 80%;
+        text-align: center;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .kvas-item:hover {
+        transform: translateY(-5px);  /* Немного приподнимаем карточку */
+        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);  /* Добавляем тень */
+    }
+
+    .kvas-item h3 {
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+
+    .kvas-item p {
+        font-size: 16px;
+        color: #555;
+    }
+</style>
+
 {% endblock %}

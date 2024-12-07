@@ -4,6 +4,154 @@
 
 /* Основные стили для всей страницы */
 
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+/* Заголовки */
+h1, h2, h3 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+/* Контейнер для карточек */
+.card-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    padding: 0 15px;
+}
+
+/* Карточка отеля */
+.card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: calc(33.33% - 20px); /* 3 карточки в ряду с промежутками */
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.2s ease;
+    box-sizing: border-box;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+}
+
+.card h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+.card p {
+    font-size: 14px;
+    color: #7f8c8d;
+}
+
+.card a {
+    text-decoration: none;
+    color: #3498db;
+    font-weight: bold;
+}
+
+.card-body {
+    padding: 20px;
+    text-align: center;
+}
+
+/* Информация об отелях (дешевый и дорогой) */
+.hotel-info {
+    background-color: #ecf0f1;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+/* Блок с отзывами */
+.reviews-container {
+    margin-top: 50px;
+    padding: 0 15px;
+}
+
+.reviews {
+    margin-top: 20px;
+}
+
+.review-card {
+    background-color: #f9f9f9;
+    border-left: 5px solid #3498db;
+    padding: 10px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease;
+    border-radius: 5px;
+}
+
+.review-card:hover {
+    transform: translateY(-5px);
+}
+
+.best {
+    font-weight: bold;
+    color: #2ecc71;
+}
+
+.worst {
+    font-weight: bold;
+    color: #e74c3c;
+}
+
+/* Кнопка для показа отзывов */
+#toggle-reviews {
+    padding: 10px 20px;
+    background-color: #3498db;
+    border: none;
+    color: white;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-bottom: 20px;
+}
+
+#toggle-reviews:hover {
+    background-color: #2980b9;
+}
+
+
+
+/* Стили для крупной карточки с графиком */
+.large-graph-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .card {
+        width: 48%; /* 2 карточки в ряду для мобильных устройств */
+    }
+}
+
+@media (max-width: 480px) {
+    .card {
+        width: 100%; /* 1 карточка в ряду для самых маленьких экранов */
+    }
+
+    #toggle-reviews {
+        width: 100%; /* Кнопка на всю ширину экрана */
+    }
+}
 
 .container {
     width: 80%;

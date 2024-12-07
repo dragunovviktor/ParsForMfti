@@ -63,8 +63,19 @@ class SavedHotels(db.Model):
     rating = db.Column(db.Text(), nullable=True)
     price = db.Column(db.String(255), nullable=False)  #
 
+
 class BestAndWorst(db.Model):
     __tablename__ = 'best_and_worst'
     id = db.Column(db.Integer, primary_key=True)
     best = db.Column(db.String(255), nullable=False)
     worst = db.Column(db.String(255), nullable=False)
+
+
+class BestAndWorstKvas(db.Model):
+    __tablename__ = 'best_and_worst_kvas'
+    id = db.Column(db.Integer, primary_key=True)
+    best = db.Column(db.String(255), nullable=False)
+    worst = db.Column(db.String(255), nullable=False)
+
+    __table_args__ = (db.UniqueConstraint('best', 'worst', name='_best_worst_uc'),)
+
