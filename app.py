@@ -34,10 +34,6 @@ migrate = Migrate(app, db)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-with app.app_context():
-    db.create_all()
-
-
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -461,40 +457,51 @@ for hotel in all_hotels:
         continue
 
 median_price = np.median(prices_rub)
-
 print(f"Медиана по ценам: {median_price} ₽")
 
+# Преобразуем рейтинги в float и заменяем 'Нет рейтинга' на np.nan
 ratings = [float(rating.replace(',', '.')) if rating != 'Нет рейтинга' else np.nan for rating in ratings]
 
+# Преобразуем в массивы numpy
 ratings = np.array(ratings, dtype=np.float64)
-
 prices_rub = np.array(prices_rub, dtype=np.float64)
 
-hotels_array = np.array(list(zip(prices_rub, ratings, all_hotels)))
+# Создаем массив отелей с ценами и рейтингами, фильтруем отели с NaN рейтингами
+hotels_array = np.array([
+    (price, rating, hotel)
+    for price, rating, hotel in zip(prices_rub, ratings, all_hotels)
+    if not np.isnan(rating)  # Исключаем отели с NaN рейтингом
+])
 
-print(f"Цены: {prices_rub[:5]}, Рейтинги: {ratings[:5]}")
-
+# Считаем соотношение цена/рейтинг
 price_rating_ratio = hotels_array[:, 0] / hotels_array[:, 1]
 
+# Добавляем соотношение цена/рейтинг к массиву отелей
 hotels_with_ratio = np.column_stack((hotels_array, price_rating_ratio))
 
+# Сортируем отели по соотношению цена/рейтинг
 sorted_by_ratio = hotels_with_ratio[hotels_with_ratio[:, 3].argsort()]
 
+# Лучшие отели
 best = []
 for hotel in sorted_by_ratio[:5]:
     price_in_usd = hotel[0] / 107  # Переводим в доллары
     best.append(f"Название: {hotel[2]['Название']}, Цена: {hotel[0]} ₽ ({price_in_usd:.2f} $), Рейтинг: {hotel[1]}, Соотношение цена/рейтинг: {hotel[3]:.2f}")
 
+# Худшие отели
 worst = []
 for hotel in sorted_by_ratio[-5:]:
     price_in_usd = hotel[0] / 107
     worst.append(f"Название: {hotel[2]['Название']}, Цена: {hotel[0]} ₽ ({price_in_usd:.2f} $), Рейтинг: {hotel[1]}, Соотношение цена/рейтинг: {hotel[3]:.2f}")
 
+# Извлекаем названия лучших отелей
 best_hotels_names = [hotel.split(",")[0].split(":")[1].strip() for hotel in best]
-worst_hotels_names = [hotel.split(",")[0].split(":")[1].strip() for hotel in worst]
 
+# Извлекаем названия худших отелей и фильтруем те, которые уже есть в списке лучших
+worst_hotels_names = [hotel.split(",")[0].split(":")[1].strip() for hotel in worst]
 worst_filtered = [hotel for hotel in worst if hotel.split(",")[0].split(":")[1].strip() not in best_hotels_names]
 
+# Выводим результаты
 print("Лучшие отели:")
 for entry in best:
     print(entry)
@@ -502,9 +509,8 @@ for entry in best:
 print("\nХудшие отели:")
 for entry in worst_filtered:
     print(entry)
-print(ratings)
 
-
+'''
 def save_hotels_to_db(hotels, prices_rub, ratings):
     with app.app_context():
         for i, hotel in enumerate(hotels):
@@ -539,7 +545,50 @@ def save_hotels_to_db(hotels, prices_rub, ratings):
 
         db.session.commit()
         print("Data successfully saved to the database.")
+'''
 
+
+def save_hotels_to_db(hotels, prices_rub, ratings):
+    with app.app_context():
+        for i, hotel in enumerate(hotels):
+            try:
+                if i >= len(prices_rub) or i >= len(ratings):
+                    raise IndexError(f"Data is missing for hotel {hotel['Название']}")
+
+                rating = ratings[i]
+
+                # Skip if rating is NaN
+                if isinstance(rating, float) and math.isnan(rating):
+                    print(f"Skipping hotel {hotel['Название']} because rating is NaN.")
+                    continue
+
+                # Handle 'Нет рейтинга' case
+                if rating == 'Нет рейтинга':
+                    rating = "No rating"
+                else:
+                    rating = str(rating).strip()
+
+                price = prices_rub[i]
+                if price <= 0:
+                    print(f"Invalid price for hotel {hotel['Название']}, setting it to 0.")
+                    price = 0
+
+                price_in_usd = price / 107 if price > 0 else 0
+
+                hotel_data = {
+                    'name': hotel['Название'],
+                    'rating': rating,
+                    'price': f"{price} ₽ ({price_in_usd:.2f} $)"
+                }
+
+                stmt = insert(SavedHotels).values(hotel_data).on_conflict_do_nothing()
+                db.session.execute(stmt)
+
+            except Exception as e:
+                print(f"Error processing hotel {hotel['Название']}: {e}")
+
+        db.session.commit()
+        print("Data successfully saved to the database.")
 
 save_hotels_to_db(all_hotels, prices_rub, ratings)
 
@@ -548,6 +597,11 @@ def save_best_and_worst(best, worst):
     with app.app_context():
         for b, w in zip(best, worst):
             try:
+                # Check if either 'best' or 'worst' is NaN
+                if (isinstance(b, float) and math.isnan(b)) or (isinstance(w, float) and math.isnan(w)):
+                    print(f"Skipping data with NaN values: best={b}, worst={w}")
+                    continue
+
                 best_and_worst_data = {
                     'best': b,
                     'worst': w
@@ -631,7 +685,6 @@ def convert_uah_to_rub(uah_amount):
     conversion_rate = 2.5  # 1 гривна = 2.5 рубля (пример)
     return round(uah_amount * conversion_rate, 2)
 
-
 # Функция для парсинга данных с сайта Europa-Market
 def get_kvas_data_europa(url):
     response = requests.get(url)
@@ -676,60 +729,12 @@ def get_kvas_data_europa(url):
 
     return kvas_data
 
-
-# Функция для парсинга данных с сайта Produkty24
-def get_kvas_data_produkty24(url):
-    response = requests.get(url)
-
-    if response.status_code != 200:
-        print(f"Ошибка при загрузке страницы {url}. Код статуса: {response.status_code}")
-        return []
-
-    soup = BeautifulSoup(response.text, 'html.parser')
-    products = soup.find_all('div', class_='col-lg-4 col-md-4 col-sm-6 col-xs-6')
-
-    kvas_data = []
-
-    for product in products:
-        title = product.find('span', class_='header').text.strip()
-
-        # Извлекаем цену в гривнах
-        price_text = product.find('div', class_='price')
-        if price_text:
-            price = price_text.find('span', class_='val').text.strip() + price_text.find('span',
-                                                                                         class_='cents').text.strip()
-            price_digits = ''.join([c for c in price if c.isdigit()])[:2]  # Оставляем только первые 2 цифры
-            price_uah = float(price_digits)
-            price_rub = convert_uah_to_rub(price_uah)
-        else:
-            price_rub = 0  # Если цена не найдена, устанавливаем 0
-
-        if price_rub > 0:  # Только добавляем товары с ценой больше 0
-            link = product.find('a', class_='inner')['href']
-            img = product.find('img', class_='photo')['src']
-
-            # Извлекаем объем из названия товара
-            volume = extract_volume(title)
-
-            kvas_data.append({
-                'title': title,
-                'price_uah': price_uah if price_uah else 0,  # Цена в гривнах
-                'price_rub': price_rub if price_rub else 0,  # Цена в рублях
-                'img': img,
-                'link': link,
-                'volume': volume
-            })
-
-    return kvas_data
-
-
 # Функция для извлечения объема из названия товара (например, "1л", "1.5л")
 def extract_volume(title):
     match = re.search(r'(\d+(\.\d+)?)\s?л', title)
     if match:
         return float(match.group(1))  # Возвращаем объем в литрах
     return 1  # Если объем не указан, считаем, что это 1 литр
-
 
 # Функция для преобразования рейтинга в числовое значение
 def transform_rating(rating):
@@ -739,18 +744,15 @@ def transform_rating(rating):
         return int(rating.split()[0])
     return 0
 
-
 # Функция для расчета цены за литр
 def calculate_price_per_liter(price, volume):
     if volume == 0:
         return 0
     return price / volume
 
-
 # Функция для вычисления математического ожидания
 def calculate_expected_value(prices):
     return np.mean(prices) if prices else 0
-
 
 # Функция для преобразования строки с ценой в число
 def parse_price(price_str):
@@ -760,7 +762,6 @@ def parse_price(price_str):
         return float(price) if price else 0
     except ValueError:
         return 0
-
 
 # Функция для более сложного расчета рейтинга
 def calculate_rating(price_per_liter, rating_score, price_mean, price_std):
@@ -778,64 +779,27 @@ def calculate_rating(price_per_liter, rating_score, price_mean, price_std):
     final_rating = rating_factor + price_factor + volume_factor
     return final_rating
 
+# Функция для сохранения лучших и худших товаров в базу данных
 def save_best_and_worst_kvas(best_value, worst_value):
     with app.app_context():
         try:
-            # Создаем новый объект BestAndWorstKvas с информацией о лучших и худших товарах
             best_and_worst_kvas = BestAndWorstKvas(best=best_value, worst=worst_value)
-
-            # Добавляем объект в сессию
             db.session.add(best_and_worst_kvas)
-
-            # Попытка сохранить изменения в базе данных
             db.session.commit()
             print(f"Сохранено: Лучший — {best_value}, Худший — {worst_value}")
-        except IntegrityError:
-            # В случае ошибки (например, если такая запись уже существует), откатываем изменения
-            db.session.rollback()
-            print(f"Ошибка: Запись с лучшим — {best_value} и худшим — {worst_value} уже существует.")
         except Exception as e:
-            # Обработка других возможных ошибок
             db.session.rollback()
             print(f"Ошибка при сохранении: {e}")
 
-
+# Функция для анализа квасов
 def analyze_kvas():
-    # Ссылки на страницы с товарами
     europa_url = "https://europa-market.ru/catalog/kvas-1401"
-    produkty_url = "https://produkty24.com.ua/ru/alkogol-i-napitki/soki-vodyi/kvas/"
 
     # Получаем данные с сайта Europa-Market
     europa_kvas_data = get_kvas_data_europa(europa_url)
 
-    # Получаем данные с сайта Produkty24
-    produkty_kvas_data = get_kvas_data_produkty24(produkty_url)
-
-    # Собираем все данные в общий список
-    combined_data = []
-
-    for item in europa_kvas_data:
-        combined_data.append({
-            'title': item['title'],
-            'price': item['price'],
-            'img': item['img'],
-            'rating': item['rating'],
-            'link': item['link'],
-            'volume': item['volume']
-        })
-
-    for item in produkty_kvas_data:
-        combined_data.append({
-            'title': item['title'],
-            'price': item['price_rub'] if item['price_rub'] != 0 else 0,  # Цена в рублях
-            'img': item['img'],
-            'rating': 'Нет отзывов',  # Для второго списка рейтинг нет
-            'link': item['link'],
-            'volume': item['volume']
-        })
-
     # Фильтруем данные, исключая товары с ценой 0
-    filtered_data = [item for item in combined_data if item['price'] > 0]
+    filtered_data = [item for item in europa_kvas_data if item['price'] > 0]
 
     # Математическое ожидание цен
     prices = [item['price'] for item in filtered_data]
@@ -880,21 +844,22 @@ def analyze_kvas():
         print(f"{item['title']} - Цена за литр: {item['price_per_liter']:.2f} руб, Рейтинг: {item['rating']:.2f}")
 
 analyze_kvas()
-
-
+# Функция для обновления данных
 def update_kvas_data():
     with app.app_context():
         try:
             db.session.query(BestAndWorstKvas).delete()
             db.session.commit()
             print(f"Старые данные удалены. Перезапуск парсинга...")
-
-            analyze_kvas() #Тут я паршу данные заново для кваса
-
+            analyze_kvas()
             print("Данные успешно обновлены.")
         except Exception as e:
             db.session.rollback()
             print(f"Ошибка при обновлении данных: {e}")
+
+# Функция для планирования обновлений каждые 6 часов
+
+
 
 def start_scheduler():
     scheduler = BackgroundScheduler()
@@ -989,4 +954,5 @@ def add_to_schedule():
 
 add_to_schedule()
 if __name__ == '__main__':
+    schedule.every().day.at("09:00").do(analyze_kvas)
     app.run(debug=True, host='0.0.0.0', port=5000)

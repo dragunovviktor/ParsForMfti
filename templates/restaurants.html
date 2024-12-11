@@ -698,10 +698,8 @@
     </div>
 
     <script>
-        // Получение всех карточек ресторана
         const restaurantCards = document.querySelectorAll('.restaurant-card');
 
-        // Обработка кликов по карточкам
         restaurantCards.forEach(card => {
             card.addEventListener('click', () => {
                 const modalId = card.getAttribute('data-modal');
@@ -709,7 +707,6 @@
             });
         });
 
-        // Закрытие модальных окон
         const closeButtons = document.querySelectorAll('.modal-close');
         closeButtons.forEach(button => {
             button.addEventListener('click', () => {
@@ -740,7 +737,7 @@
     <script>
     async function saveToProfile(restaurantName, description, imageUrl) {
         try {
-            const response = await fetch('/save_restaurant', { // Измените на '/save_restaurant'
+            const response = await fetch('/save_restaurant', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
