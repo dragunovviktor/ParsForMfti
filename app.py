@@ -24,6 +24,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
 from flask import jsonify
 import math
+import statistics
 
 app = Flask(__name__)
 app.config.from_object('config.Config')
@@ -716,7 +717,6 @@ def get_kvas_data_europa(url):
 
         # Извлекаем объем из названия товара
         volume = extract_volume(title)
-
         if price > 0:  # Только добавляем товары с ценой больше 0
             kvas_data.append({
                 'title': title,
@@ -726,8 +726,9 @@ def get_kvas_data_europa(url):
                 'link': f"https://europa-market.ru{link}",
                 'volume': volume
             })
-
     return kvas_data
+
+
 
 # Функция для извлечения объема из названия товара (например, "1л", "1.5л")
 def extract_volume(title):
@@ -779,6 +780,7 @@ def calculate_rating(price_per_liter, rating_score, price_mean, price_std):
     final_rating = rating_factor + price_factor + volume_factor
     return final_rating
 
+
 # Функция для сохранения лучших и худших товаров в базу данных
 def save_best_and_worst_kvas(best_value, worst_value):
     with app.app_context():
@@ -791,17 +793,59 @@ def save_best_and_worst_kvas(best_value, worst_value):
             db.session.rollback()
             print(f"Ошибка при сохранении: {e}")
 
+
+prcie_of_kvas = (get_kvas_data_europa('https://europa-market.ru/catalog/kvas-1401'))
+filtared_kvas = [{'title': item['title'], 'price': item['price']} for item in prcie_of_kvas]
+
+litrazh_pattern = r'(\d+[\.,]?\d*)\s?л' #регулярОчка для получения литража
+massive_for_itog_distraction = []
+
+
+
+for item in filtared_kvas:
+    # Ищем  в названии
+    match = re.search(litrazh_pattern, item['title'])
+    if match:
+        volume = match.group(1).replace(',', '.')
+        massive_for_itog_distraction.append({
+            'title': item['title'],
+            'price': item['price'],
+            'volume': float(volume)
+        })
+
+print(massive_for_itog_distraction)
+
+
+@app.route('/calculate_price', methods=['POST'])
+def calculate_price():
+    kvas_title = request.json['kvas_title']
+    quantity_ml = float(request.json['quantity_ml'])  # Количество в миллилитрах
+
+    selected_kvas = next((kvas for kvas in massive_for_itog_distraction if kvas['title'] == kvas_title), None)
+
+    if selected_kvas:
+        # Рассчитываем цену
+        price_per_liter = selected_kvas['price']
+        volume_in_liters = selected_kvas['volume']
+
+        # Стоимость за миллилитры
+        price = (price_per_liter / volume_in_liters) * (quantity_ml / 1000)
+        return jsonify({'price': round(price, 2)})
+
+    return jsonify({'error': 'Квас не найден'}), 404
+'''
+Хочу добавить функционал, чтобы пользователь указывал сколько миллилитров кваса он готов купить и ему выдавало цену
+'''
+
 # Функция для анализа квасов
 def analyze_kvas():
     europa_url = "https://europa-market.ru/catalog/kvas-1401"
 
-    # Получаем данные с сайта Europa-Market
     europa_kvas_data = get_kvas_data_europa(europa_url)
 
-    # Фильтруем данные, исключая товары с ценой 0
     filtered_data = [item for item in europa_kvas_data if item['price'] > 0]
 
-    # Математическое ожидание цен
+
     prices = [item['price'] for item in filtered_data]
     expected_value = calculate_expected_value(prices)
 
@@ -810,31 +854,24 @@ def analyze_kvas():
     price_mean = np.mean(price_per_liter)
     price_std = np.std(price_per_liter)
 
-    # Если минимальная цена 0, исключаем эти товары из дальнейшего анализа
     if min(price_per_liter) == 0:
         filtered_data = [item for item in filtered_data if calculate_price_per_liter(item['price'], item['volume']) > 0]
 
-    # Добавляем информацию о цене за литр для каждого товара и вычисляем рейтинг
     for item in filtered_data:
         item['price_per_liter'] = calculate_price_per_liter(item['price'], item['volume'])
         rating_score = transform_rating(item['rating'])
         item['rating'] = calculate_rating(item['price_per_liter'], rating_score, price_mean, price_std)
 
-    # Сортировка товаров по рейтингу
     sorted_data = sorted(filtered_data, key=lambda x: x['rating'], reverse=True)
 
-    # Получаем 5 лучших и 5 худших товаров
     best_kvas = sorted_data[:5]
     worst_kvas = sorted_data[-5:]
 
-    # Формируем строки для сохранения в базу данных
     best_string = "\n".join([f"{item['title']} - Цена за литр: {item['price_per_liter']:.2f} руб, Рейтинг: {item['rating']:.2f}" for item in best_kvas])
     worst_string = "\n".join([f"{item['title']} - Цена за литр: {item['price_per_liter']:.2f} руб, Рейтинг: {item['rating']:.2f}" for item in worst_kvas])
 
-    # Сохраняем в базу данных
     save_best_and_worst_kvas(best_string, worst_string)
 
-    # Выводим результаты
     print("\n5 лучших квасов по комплексному рейтингу:")
     for item in best_kvas:
         print(f"{item['title']} - Цена за литр: {item['price_per_liter']:.2f} руб, Рейтинг: {item['rating']:.2f}")
@@ -844,7 +881,7 @@ def analyze_kvas():
         print(f"{item['title']} - Цена за литр: {item['price_per_liter']:.2f} руб, Рейтинг: {item['rating']:.2f}")
 
 analyze_kvas()
-# Функция для обновления данных
+
 def update_kvas_data():
     with app.app_context():
         try:
@@ -857,7 +894,7 @@ def update_kvas_data():
             db.session.rollback()
             print(f"Ошибка при обновлении данных: {e}")
 
-# Функция для планирования обновлений каждые 6 часов
+
 
 
 
@@ -892,27 +929,68 @@ def start_schedule_thread():
     thread.daemon = True
     thread.start()
 
+
 @app.route('/attractions')
 @login_required
 def attractions():
-    # Получаем все записи из таблицы BestAndWorstKvas
+    massive_for_itog_distraction = []
     best_and_worst_kvas = BestAndWorstKvas.query.all()
 
-    # Передаем данные в шаблон
-    return render_template('attractions.html', best_and_worst_kvas=best_and_worst_kvas)
+    litrazh_pattern = r"(\d+[\.,]?\d*)\s*л"
 
+    kvas_by_volume = {}
+
+
+    for item in filtared_kvas:
+        match = re.search(litrazh_pattern, item['title'])
+        if match:
+            volume = match.group(1).replace(',', '.')
+            volume = float(volume)
+
+            if volume not in kvas_by_volume:
+                kvas_by_volume[volume] = []
+
+            kvas_by_volume[volume].append(item['price'])
+
+            massive_for_itog_distraction.append({
+                'title': item['title'],
+                'price': item['price'],
+                'volume': volume
+            })
+
+    volume_medians = {}
+    for volume, prices in kvas_by_volume.items():
+        volume_medians[volume] = statistics.median(prices)
+
+    cheaper_alternatives = {}
+    for item in massive_for_itog_distraction:
+        volume = item['volume']
+        median_price = volume_medians[volume]
+        if item['price'] > median_price:
+            alternatives = [
+                alt for alt in massive_for_itog_distraction
+                if alt['volume'] == volume and alt['price'] < item['price']
+            ]
+            if alternatives:
+                cheaper_alternatives[item['title']] = alternatives
+
+    return render_template(
+        'attractions.html',
+        kvas_list=massive_for_itog_distraction,
+        best_and_worst_kvas=best_and_worst_kvas,
+        volume_medians=volume_medians,
+        cheaper_alternatives=cheaper_alternatives
+    )
 @app.route('/get_best_kvas')
 def get_best_kvas():
-    # Сортируем по названию кваса "best", возможно, вам придется использовать другие поля для сортировки
     best_kvas = BestAndWorstKvas.query.order_by(BestAndWorstKvas.best).limit(5).all()
 
-    # Формируем список с нужной информацией
     best_kvas_list = []
     for kvas in best_kvas:
         best_kvas_list.append({
-            'title': kvas.best,  # Название лучшего кваса
-            'price_per_liter': 'Неизвестно',  # Пока не добавляем реальные данные
-            'rating': 'Неизвестно'  # Можно добавить рейтинг, если будет обработка
+            'title': kvas.best,
+            'price_per_liter': 'Неизвестно',
+            'rating': 'Неизвестно' 
         })
 
     return jsonify({'best': best_kvas_list})
