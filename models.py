@@ -67,15 +67,15 @@ class SavedHotels(db.Model):
 class BestAndWorst(db.Model):
     __tablename__ = 'best_and_worst'
     id = db.Column(db.Integer, primary_key=True)
-    best = db.Column(db.String(255), nullable=False)
-    worst = db.Column(db.String(255), nullable=False)
+    best = db.Column(db.String(788), nullable=False)
+    worst = db.Column(db.String(788), nullable=False)
 
 
 class BestAndWorstKvas(db.Model):
     __tablename__ = 'best_and_worst_kvas'
     id = db.Column(db.Integer, primary_key=True)
-    best = db.Column(db.String(255), nullable=False)
-    worst = db.Column(db.String(255), nullable=False)
+    best = db.Column(db.Text(), nullable=False)
+    worst = db.Column(db.Text(), nullable=False)
 
     __table_args__ = (db.UniqueConstraint('best', 'worst', name='_best_worst_uc'),)
 

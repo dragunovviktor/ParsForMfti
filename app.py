@@ -25,6 +25,7 @@ from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
 from flask import jsonify
 import math
 import statistics
+import psycopg2
 
 app = Flask(__name__)
 app.config.from_object('config.Config')
@@ -34,6 +35,9 @@ db.init_app(app)
 migrate = Migrate(app, db)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
+
+with app.app_context():
+    db.create_all()
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -990,7 +994,7 @@ def get_best_kvas():
         best_kvas_list.append({
             'title': kvas.best,
             'price_per_liter': 'Неизвестно',
-            'rating': 'Неизвестно' 
+            'rating': 'Неизвестно'
         })
 
     return jsonify({'best': best_kvas_list})
