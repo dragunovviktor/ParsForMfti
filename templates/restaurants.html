@@ -365,19 +365,19 @@
 <body>
     <!-- Navbar Section -->
     <div class="navbar">
-        <a href="{{ url_for('index') }}">Home</a>
-        <a href="{{ url_for('restaurants') }}">Restaurants</a>
-        <a href="{{ url_for('attractions') }}">Attractions</a>
-        <a href="{{ url_for('places') }}">Places</a>
-        <a href="{{ url_for('hotels') }}">Hotels</a>
-        <a href="{{ url_for('events') }}">Events</a>
-        <a href="{{ url_for('nature') }}">Nature</a>
+        <a href="{{ url_for('index') }}">Главная страница</a>
+        <a href="{{ url_for('restaurants') }}">Рестораны</a>
+        <a href="{{ url_for('attractions') }}">Квасы</a>
+        <a href="{{ url_for('places') }}">Места</a>
+        <a href="{{ url_for('hotels') }}">Отели</a>
+        <a href="{{ url_for('events') }}">События</a>
+        <a href="{{ url_for('nature') }}">Места на природе и подбор гостиниц</a>
         {% if current_user.is_authenticated %}
-            <a href="{{ url_for('profile') }}">Profile</a>
-            <a href="{{ url_for('logout') }}">Logout</a>
+            <a href="{{ url_for('profile') }}">Профиль</a>
+            <a href="{{ url_for('logout') }}">Выйти</a>
         {% else %}
-            <a href="{{ url_for('login') }}">Login</a>
-            <a href="{{ url_for('register') }}">Register</a>
+            <a href="{{ url_for('login') }}">Вход</a>
+            <a href="{{ url_for('register') }}">Регистрация</a>
         {% endif %}
     </div>
     <div class="container">
