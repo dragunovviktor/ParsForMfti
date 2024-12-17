@@ -1,7 +1,7 @@
 1) Сборка проекта осуществляется с помощью скрипта build.sh, необходимо дождаться полной отработки скрипта с учетом всех миграций, результатом должен быть поднятый flask сервер на локальном хосте 127.0.0.1:5000.
 ![говно](https://github.com/user-attachments/assets/2f154e24-6baf-4c41-a706-42aba00a4341)
 2) Переходим в браузере по следующей ссылке http://localhost:5000/
-![Главная страница](https://github.com/user-attachments/assets/46c3c73c-1c65-4237-bf88-acb14cb6dc8a)
+![Главная страница]https://github.com/dragunovviktor/ParsForMfti/blob/ProjectPskovTouristGuid/images/%D0%93%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F%20%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0.png?raw=true
 Результатом должна быть страница home, где есть основная информация о сервисе.
 3) Далее необходимо пройти регистрацию на портале, переходим в навбаре в блок Register.
 ![Внесенные поля в страницу регистрации](https://github.com/user-attachments/assets/1a68f6ff-be19-4c5d-af36-e4072a1ae110)
