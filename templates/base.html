@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Minimalist Site{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="navbar">
+        <a href="{{ url_for('index') }}">Главная страница</a>
+        <a href="{{ url_for('restaurants') }}">Рестораны</a>
+        <a href="{{ url_for('attractions') }}">Квасы</a>
+        <a href="{{ url_for('places') }}">Места</a>
+        <a href="{{ url_for('hotels') }}">Отели</a>
+        <a href="{{ url_for('events') }}">События</a>
+        <a href="{{ url_for('nature') }}">Места на природе и подбор гостиниц</a>
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('profile') }}">Профиль</a>
+            <a href="{{ url_for('logout') }}">Выйти</a>
+        {% else %}
+            <a href="{{ url_for('login') }}">Вход</a>
+            <a href="{{ url_for('register') }}">Регистрация</a>
+        {% endif %}
+    </div>
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+</body>
+</html>

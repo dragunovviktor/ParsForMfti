@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Minimalist Site{% endblock %}</title>
+    <style>
+
+	                body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #fff;
+            color: #333;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            padding: 10px 15px;
+            border-radius: 20px;
+            background-color: #007Bff;
+            transition: background-color 0.3s;
+        }
+
+
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .restaurant-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-between;
+        }
+
+        .restaurant-card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: calc(33% - 20px);
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .restaurant-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .restaurant-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .restaurant-info {
+            padding: 15px;
+        }
+
+        .restaurant-info h2 {
+            margin: 0 0 10px;
+        }
+
+        .restaurant-info p {
+            margin: 5px 0;
+        }
+
+        .save-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .save-button:hover {
+            background-color: #45a049;
+        }
+
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #fff;
+            color: #333;
+        }
+
+
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .restaurant-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-between;
+        }
+
+        .restaurant-card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+            width: calc(33% - 20px);
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .restaurant-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .restaurant-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .restaurant-info {
+            padding: 15px;
+        }
+
+        .restaurant-info h2 {
+            margin: 0 0 10px;
+        }
+
+        .restaurant-info p {
+            margin: 5px 0;
+        }
+
+        .info-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.3s ease;
+        }
+
+        .info-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+            position: relative;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .modal-close:hover {
+            color: red;
+        }
+
+        .comment-section {
+            margin-top: 20px;
+        }
+
+        .comment-section h3 {
+            margin: 0 0 10px;
+        }
+
+        .comment-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .comment-form input,
+        .comment-form textarea {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        .comment-form button {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #444;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .comment-form button:hover {
+            background-color: #555;
+        }
+
+        .comments {
+            margin-top: 10px;
+        }
+
+        .comment {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+        }
+
+        .comment p {
+            margin: 5px 0;
+        }
+
+        /* Общие стили для всего сайта */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #fff;
+            background: url('https://opis-cdn.tinkoffjournal.ru/mercury/dostoprimechatelnosti-pskov__main.ryrhpylrqrwn.jpg') no-repeat center center fixed;
+            background-size: cover;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Затемнение */
+            z-index: -1;
+        }
+
+        /* Стили для навбара */
+        .navbar {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background-color: #007bff;
+            padding: 10px 0;
+            color: 0000ff;
+        }
+
+        .navbar a {
+            color: #fff;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: 50%;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .navbar a:hover {
+            background-color: #0056b3;
+            transform: scale(1.1);
+        }
+
+        /* Стили для основного контейнера */
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+        }
+
+        /* Стили для карточек ресторанов */
+        .restaurant-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-between;
+        }
+
+        .restaurant-card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+            width: calc(33% - 20px);
+            margin-bottom: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .restaurant-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .restaurant-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .restaurant-info {
+            padding: 15px;
+        }
+
+        .restaurant-info h2 {
+            margin: 0 0 10px;
+        }
+
+        .restaurant-info p {
+            margin: 5px 0;
+        }
+
+        /* Адаптивные стили */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+            }
+
+            .navbar a {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar Section -->
+    <div class="navbar">
+        <a href="{{ url_for('index') }}">Главная страница</a>
+        <a href="{{ url_for('restaurants') }}">Рестораны</a>
+        <a href="{{ url_for('attractions') }}">Квасы</a>
+        <a href="{{ url_for('places') }}">Места</a>
+        <a href="{{ url_for('hotels') }}">Отели</a>
+        <a href="{{ url_for('events') }}">События</a>
+        <a href="{{ url_for('nature') }}">Места на природе и подбор гостиниц</a>
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('profile') }}">Профиль</a>
+            <a href="{{ url_for('logout') }}">Выйти</a>
+        {% else %}
+            <a href="{{ url_for('login') }}">Вход</a>
+            <a href="{{ url_for('register') }}">Регистрация</a>
+        {% endif %}
+    </div>
+    <div class="container">
+        <h1>Рестораны</h1>
+        <div class="restaurant-list">
+            <div class="restaurant-card" data-modal="modal-helga">
+                <img src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/16/96/87/a4/helga.jpg?w=600&h=-1&s=1" alt="Ресторан Helga">
+                <div class="restaurant-info">
+                    <h2>Ресторан Helga</h2>
+                    <p>430 отзывов | Открыто</p>
+                    <p>Европейская, Гриль | $$ - $$$</p>
+                    <p>Рекомендуем. Всё было очень вкусно. Красивая и быстрая подача. Лучшее место для гурманов в Пскове.</p>
+                    <button class="save-button" onclick="saveToProfile('Dunkan')">Сохранить</button>
+                </div>
+            </div>
+            <div class="restaurant-card" data-modal="modal-dunkan">
+                <img src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/24/85/5c/86/caption.jpg?w=1200&h=-1&s=1" alt="Ресторан Дункан">
+                <div class = "restaurant-info">
+                    <h2>Ресторан Dunkan</h2>
+                    <p>97 отзывов | Открыто</p>
+                    <p>Гриль, Кавказская, Грузинская, Пивные  | $$ - $$$</p>
+                    <p>Пришли в ресторан по рекомендации, не разочаровались. Очень уютное место, акцент сделан на пивное меню, но это не должно смущать, даже если просто пришли пообедать. Есть и колбаски, и рыба, и традиционный гриль (шашлык и т.п.) Персонал предупредительный и вежливый. </p>
+                    <button class="save-button" onclick="saveToProfile('Dunkan')">Сохранить</button>
+                </div>
+
+
+            </div>
+            <div class="restaurant-card" data-modal="modal-bar_903">
+                <img src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/04/7c/e9/b4/903.jpg?w=600&h=-1&s=1" alt="Бар 903">
+                 <div class="restaurant-info">
+                     <h2>Бар 903</h2>
+                    <p>Отзывы | Открыто</p>
+                    <p>Пиво, стейки, паб | $ - $$</p>
+            <p>Приятное место с отличным выбором пива и стейков.</p>
+            <button class="save-button" onclick="saveToProfile('Бар 903')">Сохранить</button>
+        </div>
+    </div>
+            <div class="restaurant-card" data-modal="modal-dvor">
+                <img src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/10/6b/18/0f/caption.jpg?w=600&h=-1&s=1" alt="Рестораны и кафе 'Двор Подзноева'">
+                <div class="restaurant-info">
+                    <h2>Рестораны и кафе 'Двор Подзноева'</h2>
+                    <p>678 отзывов | Открыто</p>
+                    <p>Европейская, Русская | $$ - $$$</p>
+                    <p>Самый лучший из провинциальных ресторанов. Лучше, чем ожидали.</p>
+                    <button class="save-button" onclick="saveToProfile('Рестораны и кафе 'Двор Подзноева')">Сохранить</button>
+                </div>
+            </div>
+
+            <div class="restaurant-card" data-modal="modal-mojo">
+                <img src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1a/c2/91/74/caption.jpg?w=600&h=-1&s=1" alt="Mojo GastroBar">
+                <div class="restaurant-info">
+                    <h2>Mojo GastroBar</h2>
+                    <p>376 отзывов | Открыто</p>
+                    <p>Современная, Здоровая | $$ - $$$</p>
+                    <p>Восторг! Пожалуй лучшее заведение.</p>
+                    <button class="save-button" onclick="saveToProfile('Mojo GastroBar')">Сохранить</button>
+                </div>
+            </div>
+
+            <div class="restaurant-card" data-modal="modal-moya">
+                <img src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/17/9f/29/cb/interior.jpg?w=600&h=400&s=1" alt="Ресто-Бар Моя История">
+                <div class="restaurant-info">
+                    <h2>Ресто-Бар Моя История</h2>
+                    <p>136 отзывов | Открыто</p>
+                    <p>Европейская, Азиатская | $$ - $$$</p>
+                    <p>Долго, но вкусно. Первый визит. На 4+.</p>
+                    <button class="save-button" onclick="saveToProfile('Ресто-Бар Моя История')">Сохранить</button>
+                </div>
+            </div>
+
+            <div class="restaurant-card" data-modal="modal-trapeznye">
+                <img src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/10/77/eb/06/caption.jpg?w=600&h=-1&s=1" alt="Трапезные палаты">
+                <div class="restaurant-info">
+                    <h2>Трапезные палаты</h2>
+                    <p>271 отзыв | Открыто</p>
+                    <p>Европейская, Русская | $$ - $$$</p>
+                    <p>Ел с удовольствием, счет изучал без удовольствия. Достойно, красиво и очень вкусно!</p>
+                    <button class="save-button" onclick="saveToProfile('Трапезные палаты')">Сохранить</button>
+                </div>
+            </div>
+
+            <div class="restaurant-card" data-modal="modal-pirogovye">
+                <img src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/12/e8/0b/68/caption.jpg?w=600&h=-1&s=1" alt="Кафе 'Пироговые палаты'">
+                <div class="restaurant-info">
+                    <h2>Кафе 'Пироговые палаты'</h2>
+                    <p>190 отзывов | Открыто</p>
+                    <p>Кафе, Русская | $</p>
+                    <p>Настоящий стиль и вкусно. Определенно стоит попробовать!</p>
+                    <button class="save-button" onclick="saveToProfile('Пироговые палаты')">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальные окна -->
+    <div id="modal-helga" class="info-modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>Ресторан Helga</h2>
+            <p><strong>Услуги:</strong> Есть терраса · Хорошие коктейли · Вегетарианские блюда в меню</p>
+            <p><strong>Находится в:</strong> Новая слобода</p>
+            <p><strong>Адрес:</strong> ул. Максима Горького, 6А, Псков, Псковская обл., 180007</p>
+            <p><strong>Телефон:</strong> 8 (811) 220-14-20</p>
+            <p><strong>Часы работы:</strong> Открыто ⋅ Закроется в 01:00</p>
+            <p><strong>Меню:</strong> <a href="helga.rest" target="_blank">helga.rest</a></p>
+
+            <!-- Форма для комментариев и комментарии -->
+            <div class="comment-section">
+                <h3>Комментарии:</h3>
+                {% if current_user.is_authenticated %}
+                    <form class="comment-form" data-target="comments-helga">
+                        <input type="text" name="username" placeholder="Ваш логин" required>
+                        <textarea name="comment" rows="4" placeholder="Ваш комментарий" required></textarea>
+                        <button type="submit">Отправить</button>
+                    </form>
+                {% else %}
+                    <p>Вам нужно <a href="{{ url_for('login') }}">войти</a>, чтобы оставлять комментарии.</p>
+                {% endif %}
+                <div class="comments" id="comments-helga"></div>
+            </div>
+        </div>
+    </div>
+
+
+        <div id="modal-dunkan" class="info-modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>Ресторан Dunkan</h2>
+            <p><strong>Услуги:</strong> Большой набор пивных напитков и стейков</p>
+            <p><strong>Находится в:</strong> Октябрьский проспект, 20, 1 этаж, Псков</p>
+            <p><strong>Адрес:</strong> Октябрьский проспект, 20, 1 этаж, Псков</p>
+            <p><strong>Телефон:</strong> +7 921 211 20 19 </p>
+            <p><strong>Часы работы:</strong> Открыто ⋅ Закроется в 00:00</p>
+            <p><strong>Меню:</strong> <a href="dunkan.rest" target="_blank">helga.rest</a></p>
+
+            <!-- Форма для комментариев и комментарии -->
+            <div class="comment-section">
+                <h3>Комментарии:</h3>
+                {% if current_user.is_authenticated %}
+                    <form class="comment-form" data-target="comments-helga">
+                        <input type="text" name="username" placeholder="Ваш логин" required>
+                        <textarea name="comment" rows="4" placeholder="Ваш комментарий" required></textarea>
+                        <button type="submit">Отправить</button>
+                    </form>
+                {% else %}
+                    <p>Вам нужно <a href="{{ url_for('login') }}">войти</a>, чтобы оставлять комментарии.</p>
+                {% endif %}
+                <div class="comments" id="comments-dunkan"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-dvor" class="info-modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>Рестораны и кафе 'Двор Подзноева'</h2>
+            <p><strong>Услуги:</strong> Есть терраса · Хорошие коктейли · Вегетарианские блюда в меню</p>
+            <p><strong>Находится в:</strong> Новая слобода</p>
+            <p><strong>Адрес:</strong> ул. Речная, 2, Псков, Псковская обл., 180007</p>
+            <p><strong>Телефон:</strong> 8 (811) 220-15-30</p>
+            <p><strong>Часы работы:</strong> Открыто ⋅ Закроется в 23:00</p>
+            <p><strong>Меню:</strong> <a href="dvor.rest" target="_blank">dvor.rest</a></p>
+
+            <!-- Форма для комментариев и комментарии -->
+            <div class="comment-section">
+                <h3>Комментарии:</h3>
+                {% if current_user.is_authenticated %}
+                    <form class="comment-form" data-target="comments-dvor">
+                        <input type="text" name="username" placeholder="Ваш логин" required>
+                        <textarea name="comment" rows="4" placeholder="Ваш комментарий" required></textarea>
+                        <button type="submit">Отправить</button>
+                    </form>
+                {% else %}
+                    <p>Вам нужно <a href="{{ url_for('login') }}">войти</a>, чтобы оставлять комментарии.</p>
+                {% endif %}
+                <div class="comments" id="comments-dvor"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-mojo" class="info-modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>Mojo GastroBar</h2>
+            <p><strong>Услуги:</strong> Бар · Спорт-бар · Есть Wi-Fi</p>
+            <p><strong>Находится в:</strong> Улица Ленина, 5, Псков, Псковская обл., 180000</p>
+            <p><strong>Адрес:</strong> ул. Ленина, 5, Псков, Псковская обл., 180000</p>
+            <p><strong>Телефон:</strong> 8 (811) 220-16-40</p>
+            <p><strong>Часы работы:</strong> Открыто ⋅ Закроется в 02:00</p>
+            <p><strong>Меню:</strong> <a href="mojo.rest" target="_blank">mojo.rest</a></p>
+
+            <!-- Форма для комментариев и комментарии -->
+            <div class="comment-section">
+                <h3>Комментарии:</h3>
+                {% if current_user.is_authenticated %}
+                    <form class="comment-form" data-target="comments-mojo">
+                        <input type="text" name="username" placeholder="Ваш логин" required>
+                        <textarea name="comment" rows="4" placeholder="Ваш комментарий" required></textarea>
+                        <button type="submit">Отправить</button>
+                    </form>
+                {% else %}
+                    <p>Вам нужно <a href="{{ url_for('login') }}">войти</a>, чтобы оставлять комментарии.</p>
+                {% endif %}
+                <div class="comments" id="comments-mojo"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-moya" class="info-modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>Ресто-Бар Моя История</h2>
+            <p><strong>Услуги:</strong> Есть терраса · Живая музыка · Десерты</p>
+            <p><strong>Находится в:</strong> Улица Советская, 10, Псков, Псковская обл., 180007</p>
+            <p><strong>Адрес:</strong> ул. Советская, 10, Псков, Псковская обл., 180007</p>
+            <p><strong>Телефон:</strong> 8 (811) 220-17-50</p>
+            <p><strong>Часы работы:</strong> Открыто ⋅ Закроется в 23:00</p>
+            <p><strong>Меню:</strong> <a href="moya.rest" target="_blank">moya.rest</a></p>
+
+            <!-- Форма для комментариев и комментарии -->
+            <div class="comment-section">
+                <h3>Комментарии:</h3>
+                {% if current_user.is_authenticated %}
+                    <form class="comment-form" data-target="comments-moya">
+                        <input type="text" name="username" placeholder="Ваш логин" required>
+                        <textarea name="comment" rows="4" placeholder="Ваш комментарий" required></textarea>
+                        <button type="submit">Отправить</button>
+                    </form>
+                {% else %}
+                    <p>Вам нужно <a href="{{ url_for('login') }}">войти</a>, чтобы оставлять комментарии.</p>
+                {% endif %}
+                <div class="comments" id="comments-moya"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-trapeznye" class="info-modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>Трапезные палаты</h2>
+            <p><strong>Услуги:</strong> Еда на вынос · Традиционная кухня · Вино</p>
+            <p><strong>Находится в:</strong> ул. Октябрьская, 8, Псков, Псковская обл., 180007</p>
+            <p><strong>Адрес:</strong> ул. Октябрьская, 8, Псков, Псковская обл., 180007</p>
+            <p><strong>Телефон:</strong> 8 (811) 220-18-60</p>
+            <p><strong>Часы работы:</strong> Открыто ⋅ Закроется в 22:00</p>
+            <p><strong>Меню:</strong> <a href="trapeznye.rest" target="_blank">trapeznye.rest</a></p>
+
+            <!-- Форма для комментариев и комментарии -->
+            <div class="comment-section">
+                <h3>Комментарии:</h3>
+                {% if current_user.is_authenticated %}
+                    <form class="comment-form" data-target="comments-trapeznye">
+                        <input type="text" name="username" placeholder="Ваш логин" required>
+                        <textarea name="comment" rows="4" placeholder="Ваш комментарий" required></textarea>
+                        <button type="submit">Отправить</button>
+                    </form>
+                {% else %}
+                    <p>Вам нужно <a href="{{ url_for('login') }}">войти</a>, чтобы оставлять комментарии.</p>
+                {% endif %}
+                <div class="comments" id="comments-trapeznye"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-pirogovye" class="info-modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>Кафе 'Пироговые палаты'</h2>
+            <p><strong>Услуги:</strong> Кафе · Выпечка · Чай</p>
+            <p><strong>Находится в:</strong> Псков, ул. Московская, 12</p>
+            <p><strong>Адрес:</strong> ул. Московская, 12, Псков, Псковская обл., 180007</p>
+            <p><strong>Телефон:</strong> 8 (811) 220-19-70</p>
+            <p><strong>Часы работы:</strong> Открыто ⋅ Закроется в 20:00</p>
+            <p><strong>Меню:</strong> <a href="pirogovye.rest" target="_blank">pirogovye.rest</a></p>
+
+            <!-- Форма для комментариев и комментарии -->
+            <div class="comment-section">
+                <h3>Комментарии:</h3>
+                {% if current_user.is_authenticated %}
+                    <form class="comment-form" data-target="comments-pirogovye">
+                        <input type="text" name="username" placeholder="Ваш логин" required>
+                        <textarea name="comment" rows="4" placeholder="Ваш комментарий" required></textarea>
+                        <button type="submit">Отправить</button>
+                    </form>
+                {% else %}
+                    <p>Вам нужно <a href="{{ url_for('login') }}">войти</a>, чтобы оставлять комментарии.</p>
+                {% endif %}
+                <div class="comments" id="comments-pirogovye"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="modal-bar_903" class="info-modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>Бар 903</h2>
+            <p><strong>Услуги:</strong> Пиво, стейки, паб</p>
+            <p><strong>Находится в:</strong> ул. Набат, д. 2а, Псков 180006 Россия</p>
+            <p><strong>Телефон:</strong> +7 960 221-19-03</p>
+            <p><strong>Часы работы:</strong> Открыто ⋅ Закроется в 00:00</p>
+
+            <!-- Форма для комментариев и комментарии -->
+            <div class="comment-section">
+                <h3>Комментарии:</h3>
+                {% if current_user.is_authenticated %}
+                    <form class="comment-form" data-target="comments-bar_903">
+                        <input type="text" name="username" placeholder="Ваш логин" required>
+                        <textarea name="comment" rows="4" placeholder="Ваш комментарий" required></textarea>
+                        <button type="submit">Отправить</button>
+                    </form>
+                {% else %}
+                    <p>Вам нужно <a href="{{ url_for('login') }}">войти</a>, чтобы оставлять комментарии.</p>
+                {% endif %}
+                <div class="comments" id="comments-bar_903"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const restaurantCards = document.querySelectorAll('.restaurant-card');
+
+        restaurantCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const modalId = card.getAttribute('data-modal');
+                document.getElementById(modalId).classList.add('active');
+            });
+        });
+
+        const closeButtons = document.querySelectorAll('.modal-close');
+        closeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                button.closest('.info-modal').classList.remove('active');
+            });
+        });
+
+        // Форма отправки комментариев
+        document.querySelectorAll('.comment-form').forEach(form => {
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const targetId = this.getAttribute('data-target');
+                const commentsContainer = document.getElementById(targetId);
+
+                const username = this.querySelector('input[name="username"]').value;
+                const comment = this.querySelector('textarea[name="comment"]').value;
+
+                const newComment = document.createElement('div');
+                newComment.classList.add('comment');
+                newComment.innerHTML = `<strong>${username}:</strong><p>${comment}</p>`;
+
+                commentsContainer.appendChild(newComment);
+                this.reset();
+            });
+        });
+
+    </script>
+    <script>
+    async function saveToProfile(restaurantName, description, imageUrl) {
+        try {
+            const response = await fetch('/save_restaurant', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    restaurant_name: restaurantName,
+                    image_url: imageUrl
+                })
+            });
+
+            if (response.ok) {
+                alert('Ресторан сохранен в ваш профиль!');
+            } else {
+                alert('Ошибка при сохранении ресторана.');
+            }
+        } catch (error) {
+            alert('Произошла ошибка. Попробуйте еще раз.');
+        }
+    }
+    </script>
+
+        <script>
+        document.querySelectorAll('.save-restaurant').forEach(button => {
+            button.addEventListener('click', function() {
+                const restaurantName = this.getAttribute('data-name');
+                const imageUrl = this.getAttribute('data-image');
+
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/save_restaurant';
+
+                const nameInput = document.createElement('input');
+                nameInput.type = 'hidden';
+                nameInput.name = 'restaurant_name';
+                nameInput.value = restaurantName;
+                form.appendChild(nameInput);
+
+                const imageInput = document.createElement('input');
+                imageInput.type = 'hidden';
+                imageInput.name = 'image_url';
+                imageInput.value = imageUrl;
+                form.appendChild(imageInput);
+
+                document.body.appendChild(form);
+                form.submit();
+            });
+        });
+    </script>
+
+</body>
+
+</html>

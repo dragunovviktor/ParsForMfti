@@ -1,0 +1,219 @@
+
+{% extends 'base.html' %}
+
+{% block title %} Лучшие и худшие квасы {% endblock %}
+
+{% block content %}
+<h1>Лучшие и худшие квасы</h1>
+
+<!-- Контейнер с кнопками, выровненный по центру -->
+<div class="buttons">
+    <button id="bestBtn" class="kvas-btn">Лучшие квасы</button>
+    <button id="worstBtn" class="kvas-btn">Худшие квасы</button>
+    <!-- Кнопка для покупки кваса по миллилитражу -->
+    <button id="buyKvasButton" class="kvas-btn">Хочу купить квас по миллилитражу</button>
+</div>
+
+<!-- Форма для выбора кваса и расчета -->
+<div id="kvasSelectionForm" style="display: none;">
+    <div class="select-container">
+        <label for="kvasSelect">Выберите квас:</label>
+        <select id="kvasSelect">
+            <option value="">Выберите квас</option>
+            {% for kvas in kvas_list %}
+                <option value="{{ kvas['title'] }}" data-price="{{ kvas['price'] }}" data-volume="{{ kvas['volume'] }}">
+                    {{ kvas['title'] }} ({{ kvas['price'] }} руб за {{ kvas['volume'] }} л)
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="select-container">
+        <label for="quantityMl">Количество (мл):</label>
+        <input type="number" id="quantityMl" placeholder="Введите количество" min="1" />
+    </div>
+
+    <!-- Кнопка расчета с квадратной формой -->
+    <button id="calculatePriceButton" class="square-btn">Расчет</button>
+
+    <div class="price-container" id="priceContainer">
+        <p id="calculatedPrice">Цена: </p>
+    </div>
+
+    <!-- Блок с более выгодными квасами -->
+    <div id="cheaperKvasContainer" style="display: none;">
+        <h3>Более выгодные варианты:</h3>
+        <ul id="cheaperKvasList"></ul>
+    </div>
+</div>
+
+<div id="kvasContainer"></div>
+
+<script>
+    // Обработчик для кнопки "Лучшие квасы"
+    document.getElementById('bestBtn').addEventListener('click', function() {
+        fetch('/get_best_kvas')
+            .then(response => response.json())
+            .then(data => {
+                displayKvas(data.best);
+            })
+            .catch(error => console.error('Error fetching best kvas:', error));
+    });
+
+    // Обработчик для кнопки "Худшие квасы"
+    document.getElementById('worstBtn').addEventListener('click', function() {
+        fetch('/get_worst_kvas')
+            .then(response => response.json())
+            .then(data => {
+                displayKvas(data.worst);
+            })
+            .catch(error => console.error('Error fetching worst kvas:', error));
+    });
+
+    // Функция для отображения квасов
+    function displayKvas(kvas) {
+        const container = document.getElementById('kvasContainer');
+        container.innerHTML = '';
+
+        kvas.forEach(item => {
+            const div = document.createElement('div');
+            div.classList.add('kvas-item');
+            div.innerHTML = `
+                <h3>${item.title} - ${item.price} руб за ${item.volume} л</h3>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    // Показываем форму выбора после нажатия кнопки "Хочу купить квас по миллилитражу"
+    document.getElementById('buyKvasButton').addEventListener('click', function() {
+        document.getElementById('kvasSelectionForm').style.display = 'block';
+    });
+
+    // Функция для расчета цены и поиска более выгодных альтернатив
+    document.getElementById('calculatePriceButton').addEventListener('click', function() {
+        const selectedOption = document.getElementById('kvasSelect').selectedOptions[0];
+        const kvasTitle = selectedOption ? selectedOption.value : '';
+        const quantityMl = document.getElementById('quantityMl').value;
+
+        if (!kvasTitle || !quantityMl) {
+            alert('Пожалуйста, выберите квас и укажите количество!');
+            return;
+        }
+
+        const pricePerLiter = parseFloat(selectedOption.getAttribute('data-price'));
+        const volumePerLiter = parseFloat(selectedOption.getAttribute('data-volume'));
+
+        // Расчет стоимости для выбранного объема
+        const price = (pricePerLiter * quantityMl) / (volumePerLiter * 1000);  // Преобразуем мл в литры
+
+        // Отображение дешевых альтернатив
+        const alternatives = {{ cheaper_alternatives | tojson }};
+        const cheaperKvasList = document.getElementById('cheaperKvasList');
+        cheaperKvasList.innerHTML = '';
+
+        if (alternatives[kvasTitle]) {
+            document.getElementById('cheaperKvasContainer').style.display = 'block';
+            alternatives[kvasTitle].forEach(alt => {
+                const li = document.createElement('li');
+                li.textContent = `${alt.title} - ${alt.price} руб за ${alt.volume} л`;
+                cheaperKvasList.appendChild(li);
+            });
+        } else {
+            document.getElementById('cheaperKvasContainer').style.display = 'none';
+        }
+
+        // Отображение расчета стоимости
+        document.getElementById('calculatedPrice').textContent = `Цена: ${price.toFixed(2)} руб.`;
+    });
+</script>
+
+<style>
+    /* Контейнер кнопок */
+    .buttons {
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .kvas-btn {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        margin: 0 10px;
+        border-radius: 5px;
+        transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+
+    .kvas-btn:hover {
+        transform: scale(1.1);
+        background-color: #0056b3;
+    }
+
+    /* Стиль для элементов квасов */
+    #kvasContainer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .kvas-item {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin: 10px 0;
+        width: 80%;
+        text-align: center;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .kvas-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Форма для выбора кваса */
+    .select-container {
+        margin: 10px 0;
+    }
+
+    /* Контейнер для отображения цены */
+    .price-container {
+        margin-top: 20px;
+    }
+
+    #priceContainer {
+        font-size: 18px;
+        color: #28a745;
+    }
+
+    /* Кнопка "Расчет" */
+    .square-btn {
+        width: 120px;
+        height: 40px;
+        font-size: 14px;
+        text-align: center;
+        padding: 5px 10px;
+        border-radius: 5px;
+    }
+
+    /* Стиль для блока дешевых альтернатив */
+    #cheaperKvasContainer {
+        margin-top: 20px;
+    }
+
+    #cheaperKvasList {
+        list-style-type: none;
+        padding-left: 0;
+    }
+
+    #cheaperKvasList li {
+        margin: 5px 0;
+    }
+</style>
+
+{% endblock %}

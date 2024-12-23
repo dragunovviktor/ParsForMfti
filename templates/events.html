@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Мероприятия на природе в Пскове и области{% endblock %}
+
+{% block content %}
+    <h1>Новости региона и России</h1>
+    {% if nature_places %}
+        <div class="card-container">
+            {% for nature in nature_places %}
+            <div class="card">
+                <h2>{{ nature.nature_name }}</h2>
+                <p>{{ nature.nature_description }}</p>
+                <a href="#">Подробнее</a>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Данный раздел находится в разработке.</p>
+    {% endif %}
+
+    {% if itog %}
+        <div class="card">
+            <h2>Рекомендация дня</h2>
+            <p>{{ itog[0].info }}</p>
+            <a href="#">Подробнее</a>
+        </div>
+    {% else %}
+        <p>В разработке, недоступно на данный момент, смотри документацию.</p>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ place.name }}</h1>
+<p>{{ place.description }}</p>
+<p>Rating: {{ place.rating }}</p>
+{% if current_user.is_authenticated %}
+    <a href="{{ url_for('save_place', place_id=place.id) }}">Save this place</a>
+{% endif %}
+{% endblock %}

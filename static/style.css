@@ -1,0 +1,492 @@
+/* Общие стили для всего сайта */
+
+/* style.css */
+
+/* Основные стили для всей страницы */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+/* Заголовки */
+h1, h2, h3 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+/* Контейнер для карточек */
+.card-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    padding: 0 15px;
+}
+
+/* Карточка отеля */
+.card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: calc(33.33% - 20px); /* 3 карточки в ряду с промежутками */
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.2s ease;
+    box-sizing: border-box;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+}
+
+.card h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+.card p {
+    font-size: 14px;
+    color: #7f8c8d;
+}
+
+.card a {
+    text-decoration: none;
+    color: #3498db;
+    font-weight: bold;
+}
+
+.card-body {
+    padding: 20px;
+    text-align: center;
+}
+
+/* Информация об отелях (дешевый и дорогой) */
+.hotel-info {
+    background-color: #ecf0f1;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+/* Блок с отзывами */
+.reviews-container {
+    margin-top: 50px;
+    padding: 0 15px;
+}
+
+.reviews {
+    margin-top: 20px;
+}
+
+.review-card {
+    background-color: #f9f9f9;
+    border-left: 5px solid #3498db;
+    padding: 10px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease;
+    border-radius: 5px;
+}
+
+.review-card:hover {
+    transform: translateY(-5px);
+}
+
+.best {
+    font-weight: bold;
+    color: #2ecc71;
+}
+
+.worst {
+    font-weight: bold;
+    color: #e74c3c;
+}
+
+/* Кнопка для показа отзывов */
+#toggle-reviews {
+    padding: 10px 20px;
+    background-color: #3498db;
+    border: none;
+    color: white;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-bottom: 20px;
+}
+
+#toggle-reviews:hover {
+    background-color: #2980b9;
+}
+
+
+
+/* Стили для крупной карточки с графиком */
+.large-graph-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .card {
+        width: 48%; /* 2 карточки в ряду для мобильных устройств */
+    }
+}
+
+@media (max-width: 480px) {
+    .card {
+        width: 100%; /* 1 карточка в ряду для самых маленьких экранов */
+    }
+
+    #toggle-reviews {
+        width: 100%; /* Кнопка на всю ширину экрана */
+    }
+}
+
+.container {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.saved-restaurants {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.restaurant-card {
+    width: 300px;
+    margin: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.restaurant-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.restaurant-info {
+    padding: 15px;
+}
+
+.restaurant-info h2 {
+    margin-bottom: 5px;
+}
+
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #fff; /* Белый фон для всей страницы */
+}
+
+.navbar {
+    background-color: #333; /* Темный фон для навигации */
+    overflow: hidden;
+    color: #fff; /* Белый текст */
+}
+
+.navbar a {
+    float: left;
+    display: block;
+    color: #fff; /* Белый текст */
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+.navbar a:hover {
+    background-color: #575757; /* Цвет фона при наведении */
+}
+
+/* Стили для контейнера основного контента */
+.container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Стили для страницы ресторана */
+.restaurant-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.restaurant-card img {
+    width: 100%;
+    height: auto;
+}
+
+.restaurant-info {
+    padding: 15px;
+}
+
+.save-btn {
+    background-color: #007BFF; /* Синий фон кнопки */
+    color: #fff; /* Белый текст */
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.save-btn:hover {
+    background-color: #0056b3; /* Темнее при наведении */
+}
+
+/* Стили для страницы профиля */
+.profile {
+    display: flex;
+    flex-direction: row;
+}
+
+.profile .sidebar {
+    width: 300px;
+    padding: 20px;
+    border-right: 2px solid #ddd;
+}
+
+.profile .main-content {
+    flex-grow: 1;
+    padding: 20px;
+}
+
+/* Стили для герба и карты */
+.map-container {
+    margin-top: 20px;
+}
+
+.map-container img {
+    max-width: 100%;
+    height: auto;
+    animation: fadeIn 2s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+
+body {
+    font-family: Arial, sans-serif;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    background: url('https://opis-cdn.tinkoffjournal.ru/mercury/dostoprimechatelnosti-pskov__main.ryrhpylrqrwn.jpg') no-repeat center center fixed;
+    background-size: cover;
+    /* Затемнение фона */
+    position: relative;
+}
+
+body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Затемнение: измените значение по необходимости */
+    z-index: -1;
+}
+
+/* Стили для контейнера */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.9); /* Полупрозрачный фон для контента */
+    border-radius: 10px;
+}
+
+/* Стили для заголовков и текста */
+h1, h2, h3 {
+    color: #212529;
+    margin: 0;
+}
+
+p {
+    line-height: 1.6;
+}
+
+/* Стили для кнопок */
+button, .btn {
+    background-color: #007bff;
+    border: none;
+    color: #fff;
+    border-radius: 50%;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+    outline: none;
+    display: inline-block;
+    text-align: center;
+    vertical-align: middle;
+}
+
+button:hover, .btn:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+}
+
+/* Стили для ссылок */
+a {
+    color: #007bff;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+a:hover {
+    color: #0056b3;
+}
+
+/* Стили для форм */
+form {
+    margin-bottom: 20px;
+}
+
+input[type="text"], input[type="password"], input[type="email"] {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0 20px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+input[type="submit"] {
+    background-color: #007bff;
+    border: none;
+    color: #fff;
+    border-radius: 50%;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+    outline: none;
+}
+
+input[type="submit"]:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+}
+
+/* Стили для карточек */
+.card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin: 10px 0;
+}
+
+.card img {
+    border-radius: 10px;
+    width: 100%;
+    height: auto;
+}
+
+.card-title {
+    font-size: 18px;
+    margin: 0;
+}
+
+/* Стили для навигации */
+.navbar {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: #007bff;
+    padding: 10px 0;
+    color: #fff;
+}
+
+.navbar a {
+    color: #fff;
+    text-decoration: none;
+    padding: 10px;
+    border-radius: 50%;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.navbar a:hover {
+    background-color: #0056b3;
+    transform: scale(1.1);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+    }
+
+    .navbar a {
+        margin-bottom: 10px;
+    }
+}
+
+/* Стили для списка ресторанов */
+.restaurant-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
+}
+
+.restaurant-card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+    width: calc(33% - 20px);
+    margin-bottom: 20px;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.restaurant-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.restaurant-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.restaurant-info {
+    padding: 15px;
+}
+
+.restaurant-info h2 {
+    margin: 0 0 10px;
+}
+
+.restaurant-info p {
+    margin: 5px 0;
+}
+

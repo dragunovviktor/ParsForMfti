@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Your Saved Places</h1>
+<ul>
+    {% for saved_place in saved_places %}
+        <li>
+            <a href="{{ url_for('place_detail', place_id=saved_place.place_id) }}">
+                {{ saved_place.place.name }}
+            </a>
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+
+
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h2>Your Saved Places</h2>
+        <ul>
+            {% for saved_place in saved_places %}
+                <li>{{ saved_place.place.name }}</li>
+            {% endfor %}
+        </ul>
+        <a href="{{ url_for('index') }}">Back to Home</a>
+    </div>
+
+    <div class="container">
+        <h1>Сохраненные рестораны</h1>
+        <div class="saved-restaurants">
+            {% for restaurant in saved_restaurants %}
+                <div class="restaurant-card">
+                    <div class="restaurant-info">
+                        <h2>{{ restaurant.restaurant_name }}</h2>
+                    </div>
+                </div>
+            {% else %}
+                <p>У вас пока нет сохраненных ресторанов.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+</body>
+</html>
